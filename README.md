@@ -13,7 +13,8 @@ Adversarial examples (i.e., stego images) are generated via discrete wavelet tra
 
 Let $x_1$ be the host image (benign example) and $x_2$ be the secret image (the source of perturbation).
 
-The procedure is as follow and please refer to *Sec 4.2-4.4* for details.
+The procedure is as follow and please refer to *Sec 4.2-4.4* for details. 
+> Fucking formulas.
 
 1. DWT on $x_1$ and $x_2$ separately, each of which is decomposed into 4 components, denoted by LL, LH, HL, HH.
 2. SVD on $x_{1LL}$ and $x_{2LL}$ to get $S_{X_{1LL}}$ and $S_{X_{2LL}}$ and fuse them.
