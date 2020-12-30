@@ -24,7 +24,7 @@ The procedure is as follow and please refer to *Sec 4.2-4.4* for details.
 6. IDWT on 4 components obtained above to reconstruct the stego image.
 
 Then you can get an adversarial example.
-> Note: I doubt that there are some typos or mistakes in the original paper, such as the name of DWT components and the HL component showed in Fig.2. I will check that further and then refine codes.
+> Note: I doubt that there are some typos or mistakes in the original paper, such as the name of DWT components and the HL component shown in Fig.2. I will check that further and then refine codes.
 
 ## 2. Adversarial Attack
 Not implemented yet. 
