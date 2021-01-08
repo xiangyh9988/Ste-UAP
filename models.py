@@ -8,10 +8,25 @@ from torchvision import models as torch_models
 import torch.nn as nn
 
 
-class Model(nn.Module):
+class Model:
+    def __init__(self, batch_size, gpu_memory):
+        self.batch_size = batch_size
+        self.gpu_memory = gpu_memory
+    
+    def predict(self, x):
+        raise NotImplementedError("use ModelTF or ModelPT")
 
-    def __init__(self, model_name, batch_size):
-        super(Model, self).__init__()
+class ModelPT(Model):
+    """
+    Wrapper class around PyTorch models.
+    (Ref. Square-Attack https://github.com/max-andr/square-attack/blob/master/models.py)
+
+    In order to incorporate a new model, one has to ensure that self.model is a callable object that returns logits,
+    and that the preprocessing of the inputs is done correctly (e.g. subtracting the mean and dividing over the
+    standard deviation).
+    """
+    def __init__(self, model_name, batch_size, gpu_memory):
+        super().__init__(batch_size, gpu_memory)
         self.model = model_class_dict[model_name](pretrained=True).cuda()
         self.batch_size = batch_size
         self.mean = torch.tensor([0.485, 0.456, 0.406])
@@ -19,9 +34,9 @@ class Model(nn.Module):
 
         self.model.eval()
     
-    def predict(self, x):
-        ''' x np.ndarray image '''
-        x: torch.Tensor = kornia.image_to_tensor(x)[:, :, :, ::-1]
+    def predict(self, x: torch.Tensor):
+        x = (x - self.mean) / self.std
+        x = x.astype(np.float32)
         n_batches = math.ceil(x.shape[0]/self.batch_size)
         logits_list = []
         with torch.no_grad():
@@ -40,3 +55,5 @@ model_class_dict = {
     'pt_inception': torch_models.inception_v3,
     'pt_densenet': torch_models.densenet121,
 }
+
+all_model_names = list(model_class_dict.keys())

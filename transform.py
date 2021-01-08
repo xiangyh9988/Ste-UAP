@@ -7,8 +7,8 @@ import kornia
 
 def process_on_channel(host, secret):
     ''' DWT on host and secret '''
-    LL_h, (HL_h, LH_h, HH_h) = pywt.dwt2(host, 'haar')
-    LL_s, (HL_s, LH_s, HH_s) = pywt.dwt2(secret, 'haar')
+    LL_h, (LH_h, HL_h, HH_h) = pywt.dwt2(host, 'haar')
+    LL_s, (LH_s, HL_s, HH_s) = pywt.dwt2(secret, 'haar')
 
     ''' fusion of LL component '''
     # SVD on LL components
@@ -32,7 +32,7 @@ def process_on_channel(host, secret):
     HH = HH_s
 
     ''' inverse DWT to reconstruct stego image '''
-    coeffs = LL, (HL, LH, HH)
+    coeffs = LL, (LH, HL, HH)
     stego = pywt.idwt2(coeffs, 'haar')
 
     return stego
@@ -59,10 +59,10 @@ def DWT_SVD(host_img, secret_img):
     cv2.imwrite('stego.png', stego)
     return stego
 
-if __name__ == '__main__':
-    host_img = cv2.imread('images/host.JPEG')
-    secret_img = cv2.imread('images/secret.JPEG')
-    ''' resize secret image to host image's size '''
-    secret_img = cv2.resize(secret_img, (host_img.shape[1], host_img.shape[0]))
-    stego_img = DWT_SVD(host_img, secret_img)
-    cv2.destroyAllWindows()
+# if __name__ == '__main__':
+#     host_img = cv2.imread('images/host.JPEG')
+#     secret_img = cv2.imread('images/secret.JPEG')
+#     ''' resize secret image to host image's size '''
+#     secret_img = cv2.resize(secret_img, (host_img.shape[1], host_img.shape[0]))
+#     stego_img = DWT_SVD(host_img, secret_img)
+#     cv2.destroyAllWindows()

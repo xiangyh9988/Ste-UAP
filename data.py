@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 import os
 
 
-def load_imagenet(n_ex, size=224, batch_size):
+def load_imagenet(n_ex, size=224):
     IMAGENET_SL = size
     IMAGENET_PATH = 'data/ILSVRC2012_img_val'
     imagenet = ImageFolder(IMAGE_PATH,
@@ -17,8 +17,9 @@ def load_imagenet(n_ex, size=224, batch_size):
                           ]))
     torch.manual_seed(0)
 
-    imagenet_loader = DataLoader(imagenet, batch_size=batch_size, num_workers=0)
-    return imagenet_loader
+    imagenet_loader = DataLoader(imagenet, batch_size=n_ex, shuffle=True, num_workers=0)
+    x_test, y_test = next(iter(imagenet_loader))
+    return np.array(x_test, dtype=np.float32), np.array(y_test)
 
 
 datasets_dict = {
