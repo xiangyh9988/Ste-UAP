@@ -9,10 +9,10 @@ class Logger:
             folder = '/'.join(path.split('/')[:-1])
             if not os.path.exists(folder):
                 os.makedirs(folder)
-    
+
     def print(self, message):
         print(message)
         if self.path != '':
             with open(self.path, 'a') as f:
-                f.write(message+'\n')
+                f.write(message + '\n')
                 f.flush()

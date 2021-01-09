@@ -1,5 +1,5 @@
 import torch
-import tensorflow as tf
+# import tensorflow as tf
 import numpy as np
 import math
 import kornia
@@ -29,8 +29,8 @@ class ModelPT(Model):
         super().__init__(batch_size, gpu_memory)
         self.model = model_class_dict[model_name](pretrained=True).cuda()
         self.batch_size = batch_size
-        self.mean = torch.tensor([0.485, 0.456, 0.406])
-        self.std = torch.tensor([0.229, 0.224, 0.225])
+        self.mean = np.reshape([0.485, 0.456, 0.406], [1, 3, 1, 1]).astype(np.float32)
+        self.std = np.reshape([0.229, 0.224, 0.225], [1, 3, 1, 1]).astype(np.float32)
 
         self.model.eval()
     
@@ -42,7 +42,8 @@ class ModelPT(Model):
         with torch.no_grad():
             for i in range(n_batches):
                 x_batch = x[i*self.batch_size:(i+1)*self.batch_size]
-                logits = self.model(x_batch).cpu().numpy()
+                x_batch_torch = torch.as_tensor(x_batch, device=torch.device('cuda'))
+                logits = self.model(x_batch_torch).cpu().numpy()
                 logits_list.append(logits)
         logits = np.vstack(logits_list)
         return logits

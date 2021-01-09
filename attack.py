@@ -10,7 +10,7 @@ import models
 import transform
 from datetime import datetime
 from utils import imutils, log
-np.set_printoptions(precisio=5, suppress=True)
+np.set_printoptions(precision=5, suppress=True)
 
 import pdb
 
@@ -28,9 +28,8 @@ if __name__ == '__main__':
     parser.add_argument('--n_ex', type=int, default=10000, help='Number of testing examples to test on.')
     args = parser.parse_args()
 
-    pdb.set_trace()
     ''' prepration '''
-    # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     # set dataset
     # '...mnist...'   --> mnist
     # '...cifar10...' --> cifar10
@@ -42,7 +41,7 @@ if __name__ == '__main__':
     timestamp = str(datetime.now())[:-7]
 
     # hyperparameters string, the saved output file name
-    hps_str = f"{timestamp}-model={args.model}-dataset={dataset}-n_ex={args.n_ex}"
+    hps_str = f"{timestamp}-model={args.model}-dataset={dataset}-n_ex={args.n_ex}".replace(' ', '-').replace(':', '-')
     # batch size from data.py
     batch_size = data.bs_dict[dataset]
     # model type
@@ -56,15 +55,16 @@ if __name__ == '__main__':
     # logger
     log = log.Logger(log_path)
     log.print(f'All hps: {hps_str}')
-
+    
+    pdb.set_trace()
     print('start loading dataset...')
     # inception 299x299, others 224x224
     if args.model != 'pt_inception':
-        x_test, y+test = data.datasets_dict[dataset](args.n_ex)
+        x_test, y_test = data.datasets_dict[dataset](args.n_ex)
     else:
-        x_test, y+test = data.datasets_dict[dataset](args.n_ex, size=299)
+        x_test, y_test = data.datasets_dict[dataset](args.n_ex, size=299)
     print('dataset loaded.')
-    x_test, y+test = x_test[:args.n_ex], y_test[:args.n_ex]
+    x_test, y_test = x_test[:args.n_ex], y_test[:args.n_ex]
 
     # get threat model
     models_class_dict = {'tf': None, 'pt': models.ModelPT}
@@ -75,4 +75,4 @@ if __name__ == '__main__':
     logits_clean = model.predict(x_test)
     # ndarray of bool value, where True means corrected classified
     corr_classified = logits_clean.argmax(1) == y_test
-    log.print("Clean accuracy: {:.2f}".format(np.mean(corr_classified)))
+    log.print("Clean accuracy: {:.2%}".format(np.mean(corr_classified)))

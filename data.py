@@ -8,8 +8,9 @@ import os
 
 def load_imagenet(n_ex, size=224):
     IMAGENET_SL = size
-    IMAGENET_PATH = 'data/ILSVRC2012_img_val'
-    imagenet = ImageFolder(IMAGE_PATH,
+    # IMAGENET_PATH = 'data/ILSVRC2012_img_val'
+    IMAGENET_PATH = 'D:/code/adversarial-examples/circle-attack/data/ILSVRC2012_img_val'
+    imagenet = ImageFolder(IMAGENET_PATH,
                           transforms.Compose([
                             transforms.Resize(IMAGENET_SL),
                             transforms.CenterCrop(IMAGENET_SL),
