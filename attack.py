@@ -3,16 +3,34 @@ import kornia
 import cv2
 import os
 import numpy as np
+from datetime import datetime
 import argparse
 
 import data
 import models
-import transform
 from datetime import datetime
 from utils import imutils, log
+from transform import *
 np.set_printoptions(precision=5, suppress=True)
 
 import pdb
+
+
+def generate_stego(x_test: np.ndarray, secret: np.ndarray, corr_classified):
+    ''' Generate stego image as adversarial examples
+        host - BGR BxCxHxW 
+        secret - BGR HxWxC
+    '''
+    print('start generating adversarial examples...')
+    x_test_adv = np.zeros_like(x_test)
+    pdb.set_trace()
+    for i in range(x_test_adv.shape[0]):
+        if not corr_classified[i]:
+            continue
+        x_test_adv[i] = (DWT_SVD(np.uint8(x_test[i].transpose(1, 2, 0)*255), secret).transpose(2, 0, 1)/255).astype(np.float32)
+    print('generated.')
+    print('='*30)
+    return x_test_adv
 
 
 if __name__ == '__main__':
@@ -35,7 +53,9 @@ if __name__ == '__main__':
     # '...cifar10...' --> cifar10
     # others          --> imagenet
     dataset = 'mnist' if 'mnist' in args.model else 'cifar10' if 'cifar10' in args.model else 'imagenet'
-
+    # get secret image and and convert it to BGR
+    secret_img = cv2.imread(f'images/secret_{dataset}.JPEG')
+    secret_img = cv2.cvtColor(secret_img, cv2.COLOR_BGR2RGB)
     # timestamp (string) format: yyyy-MM-DD HH-MM-SS
     # e.g. 2021-01-08 14:32:29
     timestamp = str(datetime.now())[:-7]
@@ -56,23 +76,23 @@ if __name__ == '__main__':
     log = log.Logger(log_path)
     log.print(f'All hps: {hps_str}')
     
-    pdb.set_trace()
     print('start loading dataset...')
     # inception 299x299, others 224x224
     if args.model != 'pt_inception':
-        x_test, y_test = data.datasets_dict[dataset](args.n_ex)
+        clean_loader = data.datasets_dict[dataset](args.n_ex, 224, batch_size)
+        # noise_loader = data.datasets_dict[dataset](args.n_ex, 224, batch_size, mode='noise', secret=secret_img)
+        secret_img = cv2.resize(secret_img, (224, 224))
     else:
-        x_test, y_test = data.datasets_dict[dataset](args.n_ex, size=299)
+        clean_loader = data.datasets_dict[dataset](args.n_ex, 299, batch_size)
+        # noise_loader = data.datasets_dict[dataset](args.n_ex, 299, batch_size, mode='noise', secret=secret_img)
+        secret_img = cv2.resize(secret_img, (299, 299))
     print('dataset loaded.')
-    x_test, y_test = x_test[:args.n_ex], y_test[:args.n_ex]
-
+    print('='*30)
+    # x_test, y_test = x_test[:args.n_ex], y_test[:args.n_ex]
     # get threat model
     models_class_dict = {'tf': None, 'pt': models.ModelPT}
     model = models_class_dict[model_type](args.model, batch_size, gpu_memory)
 
-    ''' select clean examples classified correctly '''
-    print('start predicting')
-    logits_clean = model.predict(x_test)
-    # ndarray of bool value, where True means corrected classified
-    corr_classified = logits_clean.argmax(1) == y_test
-    log.print("Clean accuracy: {:.2%}".format(np.mean(corr_classified)))
+    ''' clean accuracy '''
+    print('start predicting (clean & noise)...')
+    model.predict(clean_loader, args.n_ex, secret_img)

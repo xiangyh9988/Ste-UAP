@@ -23,7 +23,7 @@ def process_on_channel(host, secret):
     LH = LH_h
 
     ''' fusion of HL component '''
-    beta = 1
+    beta = 1.0
     angle = [-5, 5, -10, 10]
     HL_s_rotated = np.mean(np.array([rotate(HL_s, an) for an in angle]), axis=0)
     HL = (1-beta)*HL_h + beta*HL_s_rotated
@@ -32,31 +32,33 @@ def process_on_channel(host, secret):
     HH = HH_s
 
     ''' inverse DWT to reconstruct stego image '''
-    coeffs = LL, (LH, HL, HH)
+    coeffs = LL_h, (LH_s, HL_s, HH_s)
     stego = pywt.idwt2(coeffs, 'haar')
 
     return stego
 
 def DWT_SVD(host_img, secret_img):
-    imshow_opencv('host', host_img)
-    imshow_opencv('secret', secret_img)
-
+    # imshow_opencv('host', host_img)
+    # imshow_opencv('secret', secret_img)
+    
     ''' split image to channels '''
-    host_b, host_g, host_r = cv2.split(host_img)
-    secret_b, secret_g, secret_r = cv2.split(secret_img)
+    host_r, host_g, host_b = cv2.split(host_img)
+    secret_r, secret_g, secret_b = cv2.split(secret_img)
     ''' process image on channel separately '''
-    stego_b = process_on_channel(host_b, secret_b)
-    stego_g = process_on_channel(host_g, secret_g)
     stego_r = process_on_channel(host_r, secret_r)
+    stego_g = process_on_channel(host_g, secret_g)
+    stego_b = process_on_channel(host_b, secret_b)
 
     ''' merge channels to reconstruct BGR stego image '''
-    stego = cv2.merge([stego_b, stego_g, stego_r])
+    stego = cv2.merge([stego_r, stego_g, stego_b])
+    if host_img.shape[0] % 2 == 1 and stego.shape[0] % 2 == 0:
+        stego = cv2.resize(stego, (host_img.shape[1], host_img.shape[0]))
     # normalize to [0, 1]
     stego = (stego - stego.min())/(stego.max()-stego.min())
     # convert to [0, 255] int to save
     stego = np.uint8(stego*255)
-    imshow_opencv('int stego', stego)
-    cv2.imwrite('stego.png', stego)
+    # imshow_opencv('int stego', stego)
+    # cv2.imwrite('stego.png', stego[:, :, ::-1])
     return stego
 
 # if __name__ == '__main__':

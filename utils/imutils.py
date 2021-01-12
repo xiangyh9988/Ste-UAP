@@ -1,5 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
+import numpy as np
+import pdb
 
 def imshow_opencv(title, img):
     cv2.imshow(title, img)
@@ -22,3 +24,13 @@ def rotate(img, angle, center=None, scale=1.0):
     M = cv2.getRotationMatrix2D(center, angle, scale)
     rotated = cv2.warpAffine(img, M, (w, h))
     return rotated
+
+
+def get_norm(x_clean, x_adv, p):
+    # pdb.set_trace()
+    x_clean = x_clean.astype(np.float32)
+    x_adv = x_adv.astype(np.float32)
+    if p == 2:
+        return np.linalg.norm(np.abs(x_clean-x_adv))
+    elif p == 'inf':
+        return np.max(np.abs(x_clean-x_adv))
